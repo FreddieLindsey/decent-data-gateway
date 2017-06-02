@@ -20,7 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <dropwizard.version>1.0.0</dropwizard.version>
-        <mainClass>com.lindsey.ProxyReencryptionGatewayApplication</mainClass>
+        <mainClass>com.lindsey.pre_gateway.ProxyReencryptionGatewayApplication</mainClass>
     </properties>
 
     <dependencyManagement>

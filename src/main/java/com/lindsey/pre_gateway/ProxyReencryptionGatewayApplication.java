@@ -1,5 +1,6 @@
-package com.lindsey;
+package com.lindsey.pre_gateway;
 
+import com.lindsey.pre_gateway.resources.ProxyReEncryptionGatewayResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -23,7 +24,9 @@ public class ProxyReencryptionGatewayApplication extends Application<ProxyReencr
     @Override
     public void run(final ProxyReencryptionGatewayConfiguration configuration,
                     final Environment environment) {
-        // TODO: implement application
+        final ProxyReEncryptionGatewayResource resource = new
+          ProxyReEncryptionGatewayResource();
+        environment.jersey().register(resource);
     }
 
 }

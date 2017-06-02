@@ -1,4 +1,4 @@
-package com.lindsey;
+package com.lindsey.pre_gateway;
 
 import io.dropwizard.Configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
