@@ -13,34 +13,32 @@ import java.util.Optional;
 @JsonDeserialize(using = KeyPairDeserializer.class)
 public class KeyPair {
 
-  // Mandatory properties
-  final public Element secretKey;
-
   // Optional properties
+  public Element secretKey;
   public Element publicKey;
 
-  public KeyPair(Element secretKey, Optional<Element> publicKey) {
-    this.secretKey = secretKey;
-
+  public KeyPair(
+    Optional<Element> secretKey, Optional<Element> publicKey) {
+    secretKey.ifPresent(key -> this.secretKey = key);
     publicKey.ifPresent(key -> this.publicKey = key);
     initialize();
   }
 
-  public KeyPair(byte[] secretKeyBytes, Optional<byte[]> publicKeyBytes) {
-    final Field Zq =
-      ProxyReencryptionGatewayApplication.globalParameters.getZq();
+  public static KeyPair fromBytes(
+    Optional<byte[]> secretKeyBytes, Optional<byte[]> publicKeyBytes) {
 
-    this.secretKey = Zq.newElement(new BigInteger(secretKeyBytes));
+    final Optional<Element>[] keys = new Optional[]{ Optional.empty() };
 
-    publicKeyBytes.ifPresent(key ->
-      this.publicKey = Zq.newElement(new BigInteger(key))
-    );
+    secretKeyBytes.ifPresent(bs ->
+      keys[0] = Optional.of(keyFromBytes(bs)));
+    publicKeyBytes.ifPresent(bs ->
+      keys[1] = Optional.of(keyFromBytes(bs)));
 
-    initialize();
+    return new KeyPair(keys[0], keys[1]);
   }
 
   private void initialize() {
-    if (this.publicKey == null)
+    if (this.secretKey != null && this.publicKey == null)
       this.publicKey =
         AFGHProxyReEncryption.generatePublicKey(
           this.secretKey,
@@ -54,6 +52,12 @@ public class KeyPair {
 
   public Element getPublicKey() {
     return publicKey;
+  }
+
+  private static Element keyFromBytes(byte[] key) {
+    final Field Zq =
+      ProxyReencryptionGatewayApplication.globalParameters.getZq();
+    return Zq.newElement(new BigInteger(key));
   }
 
 }

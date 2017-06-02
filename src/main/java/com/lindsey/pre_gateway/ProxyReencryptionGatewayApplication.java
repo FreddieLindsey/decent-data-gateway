@@ -1,6 +1,8 @@
 package com.lindsey.pre_gateway;
 
 import com.lindsey.pre_gateway.health.ProxyReEncryptionHealthCheck;
+import com.lindsey.pre_gateway.resources.encryption.FirstLevelDecryptResource;
+import com.lindsey.pre_gateway.resources.encryption.FirstLevelEncryptResource;
 import com.lindsey.pre_gateway.resources.key.generate.GeneratePublicResource;
 import com.lindsey.pre_gateway.resources.key.generate.GenerateReencryptionResource;
 import com.lindsey.pre_gateway.resources.key.generate.GenerateSecretResource;
@@ -37,7 +39,9 @@ public class ProxyReencryptionGatewayApplication extends Application<ProxyReencr
     final Object[] resources = new Object[]{
       new GenerateSecretResource(),
       new GeneratePublicResource(),
-      new GenerateReencryptionResource()
+      new GenerateReencryptionResource(),
+      new FirstLevelEncryptResource(),
+      new FirstLevelDecryptResource()
     };
     for (Object r : resources) environment.jersey().register(r);
 

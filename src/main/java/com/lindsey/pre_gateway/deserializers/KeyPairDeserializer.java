@@ -18,15 +18,15 @@ public class KeyPairDeserializer extends JsonDeserializer<KeyPair> {
     ObjectCodec oc = p.getCodec();
     JsonNode node = oc.readTree(p);
 
-    // Mandatory properties
-    final byte[] secretKey = node.get("secretKey").binaryValue();
-
     // Optional properties
+    Optional<byte[]> secretKey = Optional.empty();
+    if (node.get("secretKey") != null)
+      secretKey = Optional.of(node.get("secretKey").binaryValue());
     Optional<byte[]> publicKey = Optional.empty();
     if (node.get("publicKey") != null)
       publicKey = Optional.of(node.get("publicKey").binaryValue());
 
-    return new KeyPair(secretKey, publicKey);
+    return KeyPair.fromBytes(secretKey, publicKey);
   }
 
 }

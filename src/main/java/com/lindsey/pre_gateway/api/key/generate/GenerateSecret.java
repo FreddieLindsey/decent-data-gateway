@@ -17,7 +17,8 @@ public class GenerateSecret {
     this.secretKey = AFGHProxyReEncryption.generateSecretKey(
       ProxyReencryptionGatewayApplication.globalParameters
     );
-    this.publicKey = new KeyPair(secretKey, Optional.empty()).getPublicKey();
+    this.publicKey = new KeyPair(
+      Optional.of(secretKey), Optional.empty()).getPublicKey();
   }
 
   @JsonProperty
