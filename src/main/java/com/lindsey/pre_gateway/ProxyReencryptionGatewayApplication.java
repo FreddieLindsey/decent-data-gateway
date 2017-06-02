@@ -1,10 +1,11 @@
 package com.lindsey.pre_gateway;
 
 import com.lindsey.pre_gateway.health.ProxyReEncryptionHealthCheck;
-import com.lindsey.pre_gateway.resources.ProxyReEncryptionGatewayResource;
+import com.lindsey.pre_gateway.resources.key.GenerateSecretResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nics.crypto.proxy.afgh.AFGHGlobalParameters;
 
 public class ProxyReencryptionGatewayApplication extends Application<ProxyReencryptionGatewayConfiguration> {
 
@@ -25,9 +26,13 @@ public class ProxyReencryptionGatewayApplication extends Application<ProxyReencr
   @Override
   public void run(final ProxyReencryptionGatewayConfiguration configuration,
                   final Environment environment) {
+    // Setup
+    final AFGHGlobalParameters globalParameters = new AFGHGlobalParameters
+      (256, 1536);
+
     // Resources
-    final ProxyReEncryptionGatewayResource resource = new
-      ProxyReEncryptionGatewayResource();
+    final GenerateSecretResource resource = new
+      GenerateSecretResource(globalParameters);
     environment.jersey().register(resource);
 
     // Health Checks
