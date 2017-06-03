@@ -7,7 +7,6 @@ import it.unisa.dia.gas.jpbc.Element;
 import it.unisa.dia.gas.jpbc.Field;
 import nics.crypto.proxy.afgh.AFGHProxyReEncryption;
 
-import java.math.BigInteger;
 import java.util.Optional;
 
 @JsonDeserialize(using = KeyPairDeserializer.class)

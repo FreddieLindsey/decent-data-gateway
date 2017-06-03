@@ -15,6 +15,7 @@ public class EncryptionPacket {
   private byte[] firstLevelDecrypted;
   private byte[] secondLevelEncrypted;
   private byte[] secondLevelDecrypted;
+  private byte[] reencrypted;
 
   public EncryptionPacket(KeyPair keyPair, byte[] data) {
     this.keyPair = keyPair;
@@ -33,14 +34,12 @@ public class EncryptionPacket {
   }
 
   public byte[] getFirstLevelDecryption() {
-    if (firstLevelDecrypted == null) {
+    if (firstLevelDecrypted == null)
       firstLevelDecrypted = strip(AFGHProxyReEncryption.firstLevelDecryption(
         this.data,
         this.keyPair.getSecretKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
       ));
-
-    }
 
     return firstLevelDecrypted;
   }
@@ -57,16 +56,25 @@ public class EncryptionPacket {
   }
 
   public byte[] getSecondLevelDecryption() {
-    if (secondLevelDecrypted == null) {
+    if (secondLevelDecrypted == null)
       secondLevelDecrypted = strip(AFGHProxyReEncryption.secondLevelDecryption(
         this.data,
         this.keyPair.getSecretKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
       ));
 
-    }
-
     return secondLevelDecrypted;
+  }
+
+  public byte[] getReencryption() {
+    if (reencrypted == null)
+      reencrypted = strip(AFGHProxyReEncryption.reEncryption(
+        this.data,
+        this.keyPair.getPublicKey().toBytes(),
+        ProxyReencryptionGatewayApplication.globalParameters
+      ));
+
+    return reencrypted;
   }
 
   private byte[] strip(byte[] in) {
