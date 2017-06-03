@@ -11,34 +11,80 @@ public class EncryptionPacket {
   final private KeyPair keyPair;
   final private byte[] data;
 
-  private byte[] encrypted;
-  private byte[] decrypted;
+  private byte[] firstLevelEncrypted;
+  private byte[] firstLevelDecrypted;
+  private byte[] secondLevelEncrypted;
+  private byte[] secondLevelDecrypted;
 
   public EncryptionPacket(KeyPair keyPair, byte[] data) {
     this.keyPair = keyPair;
     this.data = data;
   }
 
-  public byte[] getEncryption() {
-    if (encrypted == null)
-      encrypted = AFGHProxyReEncryption.firstLevelEncryption(
+  public byte[] getFirstLevelEncryption() {
+    if (firstLevelEncrypted == null)
+      firstLevelEncrypted = AFGHProxyReEncryption.firstLevelEncryption(
         this.data,
         this.keyPair.getPublicKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
       );
 
-    return encrypted;
+    return firstLevelEncrypted;
   }
 
-  public byte[] getDecryption() {
-    if (decrypted == null)
-      decrypted = AFGHProxyReEncryption.firstLevelDecryption(
+  public byte[] getFirstLevelDecryption() {
+    if (firstLevelDecrypted == null) {
+      firstLevelDecrypted = strip(AFGHProxyReEncryption.firstLevelDecryption(
         this.data,
         this.keyPair.getSecretKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
+      ));
+
+    }
+
+    return firstLevelDecrypted;
+  }
+
+  public byte[] getSecondLevelEncryption() {
+    if (secondLevelEncrypted == null)
+      secondLevelEncrypted = AFGHProxyReEncryption.secondLevelEncryption(
+        this.data,
+        this.keyPair.getPublicKey().toBytes(),
+        ProxyReencryptionGatewayApplication.globalParameters
       );
 
-    return decrypted;
+    return secondLevelEncrypted;
+  }
+
+  public byte[] getSecondLevelDecryption() {
+    if (secondLevelDecrypted == null) {
+      secondLevelDecrypted = strip(AFGHProxyReEncryption.secondLevelDecryption(
+        this.data,
+        this.keyPair.getSecretKey().toBytes(),
+        ProxyReencryptionGatewayApplication.globalParameters
+      ));
+
+    }
+
+    return secondLevelDecrypted;
+  }
+
+  private byte[] strip(byte[] in) {
+    // Find last index
+    int last = in.length - 1;
+    while (in[last] == 0 && last >= 0) last--;
+
+    // Find first index
+    int index = 0;
+    while (in[index] == 0 && index < in.length) index++;
+
+    byte[] out = new byte[last - index + 1];
+    while (index <= last) {
+      out[out.length - (last - index) - 1] = in[index];
+      index++;
+    }
+
+    return out;
   }
 
 }

@@ -1,7 +1,8 @@
 package com.lindsey.pre_gateway.resources.encryption;
 
 import com.codahale.metrics.annotation.Timed;
-import com.lindsey.pre_gateway.api.encryption.FirstLevelEncrypt;
+import com.lindsey.pre_gateway.api.encryption.FirstLevelDecrypt;
+import com.lindsey.pre_gateway.api.encryption.SecondLevelDecrypt;
 import com.lindsey.pre_gateway.models.EncryptionPacket;
 
 import javax.ws.rs.Consumes;
@@ -11,15 +12,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 
-@Path("/encryption/encrypt/first")
+@Path("/encryption/decrypt/second")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class FirstLevelEncryptResource {
+public class SecondLevelDecryptResource {
 
   @POST
   @Timed
-  public FirstLevelEncrypt firstLevelEncrypt(EncryptionPacket packet) {
-    return new FirstLevelEncrypt(packet);
+  public SecondLevelDecrypt secondLevelDecrypt(EncryptionPacket packet) {
+    return new SecondLevelDecrypt(packet);
   }
 
 }

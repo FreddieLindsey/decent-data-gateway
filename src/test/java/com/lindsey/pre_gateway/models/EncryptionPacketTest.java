@@ -5,18 +5,7 @@ import org.junit.Test;
 public class EncryptionPacketTest {
 
   @Test
-  public void getEncryption() throws Exception {
-    KeyPair keyPair = new KeyPair();
-    keyPair.generatePublicKey();
-    EncryptionPacket packet = new EncryptionPacket(
-      keyPair,
-      "Hello World\n".getBytes()
-    );
-    packet.getEncryption();
-  }
-
-  @Test
-  public void getDecryption() throws Exception {
+  public void getFirstLevelEncryption() throws Exception {
     KeyPair keyPair = new KeyPair();
     keyPair.generateSecretKey();
     keyPair.generatePublicKey();
@@ -24,8 +13,30 @@ public class EncryptionPacketTest {
       keyPair,
       "Hello World\n".getBytes()
     );
-    byte[] encrypted = packet.getEncryption();
+    packet.getFirstLevelEncryption();
+  }
 
+  @Test
+  public void getFirstLevelDecryption() throws Exception {
+    KeyPair keyPair = new KeyPair();
+    keyPair.generateSecretKey();
+    keyPair.generatePublicKey();
+    String input = "Hello World\n";
+    EncryptionPacket packet = new EncryptionPacket(
+      keyPair,
+      input.getBytes()
+    );
+    byte[] encrypted = packet.getFirstLevelEncryption();
+    packet = new EncryptionPacket(
+      keyPair,
+      encrypted
+    );
+    byte[] decrypted = packet.getFirstLevelDecryption();
+
+    StringBuilder s = new StringBuilder();
+    for (byte b : decrypted)
+      s.append((char) b);
+    assert input.equals(s.toString());
   }
 
 }

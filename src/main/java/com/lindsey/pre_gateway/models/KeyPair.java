@@ -64,7 +64,7 @@ public class KeyPair {
   private static Element secretKeyFromBytes(byte[] key) {
     final Field Zq =
       ProxyReencryptionGatewayApplication.globalParameters.getZq();
-    return Zq.newElement(new BigInteger(key));
+    return AFGHProxyReEncryption.bytesToElement(key, Zq);
   }
 
   private static Element publicKeyFromBytes(byte[] key) {

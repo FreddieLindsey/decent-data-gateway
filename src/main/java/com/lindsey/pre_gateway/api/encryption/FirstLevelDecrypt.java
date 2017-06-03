@@ -13,7 +13,7 @@ public class FirstLevelDecrypt {
 
   @JsonProperty
   public byte[] getDecrypted() {
-    return encryptionPacket.getDecryption();
+    return encryptionPacket.getFirstLevelDecryption();
   }
 
 }
