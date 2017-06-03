@@ -91,7 +91,9 @@ public class EncryptionPacketTest {
     );
     byte[] decrypted = packet.getFirstLevelDecryption();
 
-    assert decrypted.equals(input.getBytes());
+    byte[] inputBytes = input.getBytes();
+    for (int i = 0; i < inputBytes.length; i++)
+      assert inputBytes[i] == decrypted[i];
   }
 
 }
