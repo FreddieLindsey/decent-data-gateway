@@ -1,12 +1,8 @@
 package com.lindsey.pre_gateway.api.key.generate;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lindsey.pre_gateway.ProxyReencryptionGatewayApplication;
 import com.lindsey.pre_gateway.models.KeyPair;
 import it.unisa.dia.gas.jpbc.Element;
-import nics.crypto.proxy.afgh.AFGHProxyReEncryption;
-
-import java.util.Optional;
 
 public class GenerateSecret {
 
@@ -14,11 +10,12 @@ public class GenerateSecret {
   private final Element publicKey;
 
   public GenerateSecret() {
-    this.secretKey = AFGHProxyReEncryption.generateSecretKey(
-      ProxyReencryptionGatewayApplication.globalParameters
-    );
-    this.publicKey = new KeyPair(
-      Optional.of(secretKey), Optional.empty()).getPublicKey();
+    KeyPair keyPair = new KeyPair();
+    keyPair.generateSecretKey();
+    keyPair.generatePublicKey();
+
+    secretKey = keyPair.getSecretKey();
+    publicKey = keyPair.getPublicKey();
   }
 
   @JsonProperty

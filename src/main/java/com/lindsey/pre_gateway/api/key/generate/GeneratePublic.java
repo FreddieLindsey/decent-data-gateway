@@ -8,6 +8,7 @@ public class GeneratePublic {
   private final Element publicKey;
 
   public GeneratePublic(KeyPair keyPair) {
+    keyPair.generatePublicKey();
     this.publicKey = keyPair.getPublicKey();
   }
 
