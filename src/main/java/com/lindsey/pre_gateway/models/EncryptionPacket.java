@@ -57,22 +57,22 @@ public class EncryptionPacket {
 
   public byte[] getSecondLevelDecryption() {
     if (secondLevelDecrypted == null)
-      secondLevelDecrypted = strip(AFGHProxyReEncryption.secondLevelDecryption(
+      secondLevelDecrypted = AFGHProxyReEncryption.secondLevelDecryption(
         this.data,
         this.keyPair.getSecretKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
-      ));
+      );
 
     return secondLevelDecrypted;
   }
 
   public byte[] getReencryption() {
     if (reencrypted == null)
-      reencrypted = strip(AFGHProxyReEncryption.reEncryption(
+      reencrypted = AFGHProxyReEncryption.reEncryption(
         this.data,
         this.keyPair.getPublicKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
-      ));
+      );
 
     return reencrypted;
   }
