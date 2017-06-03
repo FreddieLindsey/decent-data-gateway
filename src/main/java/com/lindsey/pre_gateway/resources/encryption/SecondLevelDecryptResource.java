@@ -1,7 +1,6 @@
 package com.lindsey.pre_gateway.resources.encryption;
 
 import com.codahale.metrics.annotation.Timed;
-import com.lindsey.pre_gateway.api.encryption.FirstLevelDecrypt;
 import com.lindsey.pre_gateway.api.encryption.SecondLevelDecrypt;
 import com.lindsey.pre_gateway.models.EncryptionPacket;
 
