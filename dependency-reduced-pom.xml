@@ -87,6 +87,27 @@
       </plugin>
     </plugins>
   </build>
+  <repositories>
+    <repository>
+      <id>in-project</id>
+      <name>In Project Repo</name>
+      <url>file:///${project.basedir}/lib</url>
+    </repository>
+  </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
   <reporting>
     <plugins>
       <plugin>
@@ -111,6 +132,26 @@
         <version>${dropwizard.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>commons</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.6</version>
+      </dependency>
+      <dependency>
+        <groupId>jpbc</groupId>
+        <artifactId>jpbc-api</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>jpbc</groupId>
+        <artifactId>jpbc-plaf</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>nics-crypto</groupId>
+        <artifactId>nics-crypto</artifactId>
+        <version>1.0.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

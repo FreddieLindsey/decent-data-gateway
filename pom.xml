@@ -23,6 +23,14 @@
         <mainClass>com.lindsey.pre_gateway.ProxyReencryptionGatewayApplication</mainClass>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>in-project</id>
+            <name>In Project Repo</name>
+            <url>file:///${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -31,6 +39,26 @@
                 <version>${dropwizard.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>commons</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.6</version>
+            </dependency>
+            <dependency>
+                <groupId>jpbc</groupId>
+                <artifactId>jpbc-api</artifactId>
+                <version>1.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>jpbc</groupId>
+                <artifactId>jpbc-plaf</artifactId>
+                <version>1.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>nics-crypto</groupId>
+                <artifactId>nics-crypto</artifactId>
+                <version>1.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -49,6 +77,22 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jpbc</groupId>
+            <artifactId>jpbc-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jpbc</groupId>
+            <artifactId>jpbc-plaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>nics-crypto</groupId>
+            <artifactId>nics-crypto</artifactId>
         </dependency>
     </dependencies>
 
