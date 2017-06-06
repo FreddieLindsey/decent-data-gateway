@@ -110,17 +110,17 @@ public class EncryptionPacketTest {
 
     // Encrypt m with pk_a
     packet = new EncryptionPacket(
-      KeyPair.fromBytes(Optional.empty(), Optional.of(delegatorBytes[1])),
+      delegatee,
       input.getBytes()
     );
-    byte[] secondLevelEncryption = packet.getFirstLevelEncryption();
+    byte[] secondLevelEncryption = packet.getSecondLevelEncryption();
 
     // Decrypt m with sk_a
     packet = new EncryptionPacket(
-      KeyPair.fromBytes(Optional.of(delegatorBytes[0]), Optional.empty()),
+      delegator,
       secondLevelEncryption
     );
-    byte[] secondLevelDecryption = packet.getFirstLevelDecryption();
+    byte[] secondLevelDecryption = packet.getSecondLevelDecryption();
 
     byte[] inputBytes = input.getBytes();
     for (int i = 0; i < inputBytes.length; i++)
@@ -145,38 +145,13 @@ public class EncryptionPacketTest {
 
     // Decrypt m with sk_b
     packet = new EncryptionPacket(
-      KeyPair.fromBytes(Optional.of(delegateeBytes[0]), Optional.empty()),
+      delegatee,
       reencrypted
     );
     byte[] decrypted = packet.getFirstLevelDecryption();
 
     for (int i = 0; i < inputBytes.length; i++)
       assert inputBytes[i] == decrypted[i];
-
-    KeyGenerator KeyGen = null;
-    try {
-      KeyGen = KeyGenerator.getInstance("AES");
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
-    }
-
-    //KeyGen.init(128);
-
-    SecretKey symmetricKey = KeyGen.generateKey();
-
-    byte[] symmetricKeyBytes = symmetricKey.getEncoded();
-    byte[] encryptDecrypt = strip(AFGHProxyReEncryption.firstLevelDecryption(
-      AFGHProxyReEncryption.firstLevelEncryption(
-        symmetricKeyBytes,
-        delegator.getPublicKey().toBytes(),
-        ProxyReencryptionGatewayApplication.globalParameters
-      ),
-      delegator.getSecretKey().toBytes(),
-      ProxyReencryptionGatewayApplication.globalParameters
-    ));
-
-    for (int i = 0; i < symmetricKeyBytes.length; i++)
-      assert symmetricKeyBytes[i] == encryptDecrypt[i];
   }
 
   private byte[] strip(byte[] in) {
