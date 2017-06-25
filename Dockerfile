@@ -1,6 +1,6 @@
 FROM java:openjdk-8-jdk
 
-ADD target/pre-0.2.jar /data/pre.jar
+ADD target/pre-0.3.jar /data/pre.jar
 
 ADD src/main/resources/config.yml /data/config.yml
 

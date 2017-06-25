@@ -3,29 +3,40 @@ package com.lindsey.pre_gateway.models;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.lindsey.pre_gateway.ProxyReencryptionGatewayApplication;
 import com.lindsey.pre_gateway.deserializers.EncryptionPacketDeserializer;
+import nics.crypto.proxy.afgh.AFGHGlobalParameters;
 import nics.crypto.proxy.afgh.AFGHProxyReEncryption;
 
 import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 @JsonDeserialize(using = EncryptionPacketDeserializer.class)
 public class EncryptionPacket {
 
+  private final static int SIZE_LENGTH = 8;
+
   final private KeyPair keyPair;
   final private byte[] data;
+  private ArrayList<byte[]> parts;
 
   private byte[] symmetricKey;
+  private byte[] iv;
   private byte[] symmetricEncryption;
   private byte[] symmetricDecryption;
 
-  private byte[] firstLevelEncrypted;
-  private byte[] secondLevelEncrypted;
-  private byte[] reencrypted;
+  private byte[] firstLevelEncryptedKey;
+  private byte[] secondLevelEncryptedKey;
+  private byte[] reencryptedKey;
+
+  private byte[] firstLevelEncryptedIV;
+  private byte[] secondLevelEncryptedIV;
+  private byte[] reencryptedIV;
 
   public EncryptionPacket(KeyPair keyPair, byte[] data) {
     this.keyPair = keyPair;
@@ -36,25 +47,40 @@ public class EncryptionPacket {
     if (symmetricEncryption == null)
       encrypt();
 
-    if (firstLevelEncrypted == null)
-      firstLevelEncrypted = AFGHProxyReEncryption.firstLevelEncryption(
+    if (firstLevelEncryptedKey == null)
+      firstLevelEncryptedKey = AFGHProxyReEncryption.firstLevelEncryption(
         symmetricKey,
         this.keyPair.getPublicKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
       );
 
-    return mergeByteArrays(firstLevelEncrypted, symmetricEncryption);
+      firstLevelEncryptedIV = AFGHProxyReEncryption.firstLevelEncryption(
+        iv,
+        this.keyPair.getPublicKey().toBytes(),
+        ProxyReencryptionGatewayApplication.globalParameters
+      );
+
+    return mergeByteArrays(
+      firstLevelEncryptedKey, firstLevelEncryptedIV,
+      symmetricEncryption);
   }
 
   public byte[] getFirstLevelDecryption() {
     if (symmetricDecryption == null) {
-      ArrayList<byte[]> parts = splitByteArrays(data);
+      splitByteArrays(data);
 
       symmetricKey = strip(AFGHProxyReEncryption.firstLevelDecryption(
         parts.get(0),
         this.keyPair.getSecretKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
       ));
+
+      iv = strip(AFGHProxyReEncryption.firstLevelDecryption(
+        parts.get(1),
+        this.keyPair.getSecretKey().toBytes(),
+        ProxyReencryptionGatewayApplication.globalParameters
+      ));
+
       decrypt();
     }
 
@@ -65,25 +91,40 @@ public class EncryptionPacket {
     if (symmetricEncryption == null)
       encrypt();
 
-    if (secondLevelEncrypted == null)
-      secondLevelEncrypted = AFGHProxyReEncryption.secondLevelEncryption(
+    if (secondLevelEncryptedKey == null)
+      secondLevelEncryptedKey = AFGHProxyReEncryption.secondLevelEncryption(
         symmetricKey,
         this.keyPair.getPublicKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
       );
 
-    return mergeByteArrays(secondLevelEncrypted, symmetricEncryption);
+      secondLevelEncryptedIV = AFGHProxyReEncryption.secondLevelEncryption(
+        iv,
+        this.keyPair.getPublicKey().toBytes(),
+        ProxyReencryptionGatewayApplication.globalParameters
+      );
+
+    return mergeByteArrays(
+      secondLevelEncryptedKey, secondLevelEncryptedIV,
+      symmetricEncryption);
   }
 
   public byte[] getSecondLevelDecryption() {
     if (symmetricDecryption == null) {
-      ArrayList<byte[]> parts = splitByteArrays(data);
+      splitByteArrays(data);
 
       symmetricKey = strip(AFGHProxyReEncryption.secondLevelDecryption(
         parts.get(0),
         this.keyPair.getSecretKey().toBytes(),
         ProxyReencryptionGatewayApplication.globalParameters
       ));
+
+      iv = strip(AFGHProxyReEncryption.secondLevelDecryption(
+        parts.get(1),
+        this.keyPair.getSecretKey().toBytes(),
+        ProxyReencryptionGatewayApplication.globalParameters
+      ));
+
       decrypt();
     }
 
@@ -91,19 +132,24 @@ public class EncryptionPacket {
   }
 
   public byte[] getReencryption() {
-    ArrayList<byte[]> parts = splitByteArrays(data);
+    splitByteArrays(data);
 
-    reencrypted = AFGHProxyReEncryption.reEncryption(
+    reencryptedKey = AFGHProxyReEncryption.reEncryption(
       parts.get(0),
       this.keyPair.getPublicKey().toBytes(),
       ProxyReencryptionGatewayApplication.globalParameters
     );
 
-    return mergeByteArrays(reencrypted, parts.get(1));
+    reencryptedIV = AFGHProxyReEncryption.reEncryption(
+      parts.get(1),
+      this.keyPair.getPublicKey().toBytes(),
+      ProxyReencryptionGatewayApplication.globalParameters
+    );
+
+    return mergeByteArrays(reencryptedKey, reencryptedIV, parts.get(2));
   }
 
   private void encrypt() {
-
     KeyGenerator KeyGen = null;
     try {
       KeyGen = KeyGenerator.getInstance("AES");
@@ -111,21 +157,23 @@ public class EncryptionPacket {
       e.printStackTrace();
     }
 
-    //KeyGen.init(128);
-
-    SecretKey symmetricKey = KeyGen.generateKey();
-
     Cipher aesCipher = null;
     try {
-      aesCipher = Cipher.getInstance("AES");
+      aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
     } catch (NoSuchPaddingException e) {
       e.printStackTrace();
     }
 
+    SecretKey symmetricKey = KeyGen.generateKey();
+    IvParameterSpec ivParameterSpec =
+      new IvParameterSpec(SecureRandom.getSeed(16));
+
     try {
-      aesCipher.init(Cipher.ENCRYPT_MODE, symmetricKey);
+      aesCipher.init(Cipher.ENCRYPT_MODE, symmetricKey, ivParameterSpec);
+    } catch (InvalidAlgorithmParameterException e) {
+      e.printStackTrace();
     } catch (InvalidKeyException e) {
       e.printStackTrace();
     }
@@ -138,15 +186,16 @@ public class EncryptionPacket {
       e.printStackTrace();
     }
     this.symmetricKey = symmetricKey.getEncoded();
+    this.iv = ivParameterSpec.getIV();
   }
 
   private void decrypt() {
-    ArrayList<byte[]> parts = splitByteArrays(data);
     SecretKey symmetricKey = new SecretKeySpec(this.symmetricKey, "AES");
+    IvParameterSpec ivParameterSpec = new IvParameterSpec(this.iv);
 
     Cipher aesCipher = null;
     try {
-      aesCipher = Cipher.getInstance("AES");
+      aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
     } catch (NoSuchPaddingException e) {
@@ -154,13 +203,15 @@ public class EncryptionPacket {
     }
 
     try {
-      aesCipher.init(Cipher.DECRYPT_MODE, symmetricKey);
+      aesCipher.init(Cipher.DECRYPT_MODE, symmetricKey, ivParameterSpec);
     } catch (InvalidKeyException e) {
+      e.printStackTrace();
+    } catch (InvalidAlgorithmParameterException e) {
       e.printStackTrace();
     }
 
     try {
-      symmetricDecryption = aesCipher.doFinal(parts.get(1));
+      symmetricDecryption = aesCipher.doFinal(parts.get(2));
     } catch (IllegalBlockSizeException e) {
       e.printStackTrace();
     } catch (BadPaddingException e) {
@@ -168,34 +219,35 @@ public class EncryptionPacket {
     }
   }
 
-  private byte[] mergeByteArrays(byte[] in1, byte[] in2) {
-    byte[] le = ByteBuffer.allocate(8).putInt(in1.length).array();
-
-    byte[] out = new byte[le.length + in1.length + in2.length];
+  private byte[] mergeByteArrays(byte[]... inputs) {
+    int outSize = 0;
+    for (byte[] i : inputs)
+      outSize += i.length + SIZE_LENGTH;
+    byte[] out = new byte[outSize];
 
     int counter = 0;
-    for (byte b : le) out[counter++] = b;
-    for (byte b : in1) out[counter++] = b;
-    for (byte b : in2) out[counter++] = b;
+    for (byte[] i : inputs) {
+      byte[] size = ByteBuffer.allocate(SIZE_LENGTH).putInt(i.length).array();
+      for (byte b : size) out[counter++] = b;
+      for (byte b : i)    out[counter++] = b;
+    }
 
     return out;
   }
 
   private ArrayList<byte[]> splitByteArrays(byte[] in) {
-    byte[] inl = new byte[8];
-    for (int i = 0; i < inl.length; i++) inl[i] = in[i];
-    int split = ByteBuffer.wrap(inl).getInt();
-
-    byte[] keyData = new byte[split];
-    byte[] encData = new byte[in.length - split - inl.length];
-
-    int counter = inl.length;
-    for (int i = 0; i < keyData.length; i++) keyData[i] = in[counter++];
-    for (int i = 0; i < encData.length; i++) encData[i] = in[counter++];
-
+    int counter = 0;
     ArrayList<byte[]> out = new ArrayList<>();
-    out.add(keyData);
-    out.add(encData);
+    while (counter < in.length) {
+      byte[] size = new byte[SIZE_LENGTH];
+      for (int i = 0; i < SIZE_LENGTH; i++) size[i] = in[counter++];
+      int split = ByteBuffer.wrap(size).getInt();
+      byte[] part = new byte[split];
+      for (int i = 0; i < split; i++) part[i] = in[counter++];
+      out.add(part);
+    }
+
+    parts = out;
     return out;
   }
 
