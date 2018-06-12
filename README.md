@@ -4,8 +4,8 @@ How to start the ProxyReencryptionGateway application
 ---
 
 1. Run `mvn clean install` to build your application
-1. Start application with `java -jar target/pre-${version}.jar server config.yml`
-1. To check that your application is running enter url `http://localhost:8080`
+1. Start application with `java -jar target/pre-${version}.jar server src/main/resources/config.yml`
+1. To check that your application is running enter url `http://localhost:7000`
 
 Docker
 ---
@@ -16,4 +16,4 @@ Docker
 Health Check
 ---
 
-To see your applications health enter url `http://localhost:8081/healthcheck`
+To see your applications health enter url `http://localhost:7001/healthcheck`
