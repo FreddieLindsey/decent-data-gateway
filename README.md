@@ -11,7 +11,7 @@ Docker
 ---
 
 1. Run `docker build -t freddielindsey/pre-gateway .`
-1. Run `docker start -it freddielindsey/pre-gateway`
+1. Run `docker run -it freddielindsey/pre-gateway`
 
 Health Check
 ---
